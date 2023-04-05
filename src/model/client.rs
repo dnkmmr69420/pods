@@ -24,6 +24,7 @@ pub(crate) enum ClientError {
     Images,
     Containers,
     Pods,
+    Volumes,
 }
 
 mod imp {
@@ -44,6 +45,8 @@ mod imp {
         pub(super) container_list: UnsyncOnceCell<model::ContainerList>,
         #[property(get = Self::pod_list)]
         pub(super) pod_list: UnsyncOnceCell<model::PodList>,
+        #[property(get = Self::volume_list)]
+        pub(super) volume_list: UnsyncOnceCell<model::VolumeList>,
         #[property(get = Self::action_list)]
         pub(super) action_list: UnsyncOnceCell<model::ActionList>,
     }
@@ -147,6 +150,12 @@ mod imp {
                 .to_owned()
         }
 
+        fn volume_list(&self) -> model::VolumeList {
+            self.volume_list
+                .get_or_init(|| model::VolumeList::from(&*self.obj()))
+                .to_owned()
+        }
+
         fn action_list(&self) -> model::ActionList {
             self.action_list
                 .get_or_init(|| model::ActionList::from(&*self.obj()))
@@ -224,6 +233,10 @@ impl Client {
                             |_| err_op(ClientError::Pods)
                         }
                     );
+                    obj.volume_list().refresh({
+                        let err_op = err_op.clone();
+                        |_| err_op(ClientError::Volumes)
+                    });
 
                     op();
                     obj.start_event_listener(err_op, finish_op);
@@ -268,6 +281,10 @@ impl Client {
                             "pod" => obj.pod_list().handle_event(event, {
                                 let err_op = err_op.clone();
                                 |_| err_op(ClientError::Pods)
+                            }),
+                            "volume" => obj.volume_list().handle_event(event, {
+                                let err_op = err_op.clone();
+                                |_| err_op(ClientError::Volumes)
                             }),
                             other => log::warn!("Unhandled event type: {other}"),
                         }

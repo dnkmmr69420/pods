@@ -319,6 +319,26 @@
                                               </object>
                                             </child>
 
+                                            <!-- Volumes Panel -->
+                                            <child>
+                                              <object class="AdwViewStackPage" id="volumes_view_stack_page">
+                                                <property name="icon-name">drive-harddisk-symbolic</property>
+                                                <property name="name">volumes</property>
+                                                <property name="title" translatable="yes">Volumes</property>
+                                                <property name="child">
+                                                  <object class="PdsVolumesPanel" id="volumes_panel">
+                                                    <binding name="volume-list">
+                                                      <lookup name="volume-list" type="Client">
+                                                        <lookup name="client" type="ConnectionManager">
+                                                          <lookup name="connection-manager">PdsWindow</lookup>
+                                                        </lookup>
+                                                      </lookup>
+                                                    </binding>
+                                                  </object>
+                                                </property>
+                                              </object>
+                                            </child>
+
                                           </object>
                                         </child>
 

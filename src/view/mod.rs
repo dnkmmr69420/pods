@@ -19,6 +19,8 @@ mod search_panel;
 mod statusbar;
 mod value;
 mod volume;
+mod volume2;
+mod volumes2;
 mod welcome_page;
 
 pub(crate) use self::action::Page as ActionPage;
@@ -92,4 +94,7 @@ pub(crate) use self::search_panel::SearchPanel;
 pub(crate) use self::statusbar::Statusbar;
 pub(crate) use self::value::Row as ValueRow;
 pub(crate) use self::volume::Row as VolumeRow;
+pub(crate) use self::volume2::DetailsPage as VolumeDetailsPage;
+pub(crate) use self::volume2::Row as Volume2Row;
+pub(crate) use self::volumes2::Panel as Volumes2Panel;
 pub(crate) use self::welcome_page::WelcomePage;

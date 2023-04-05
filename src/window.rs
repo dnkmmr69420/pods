@@ -72,6 +72,10 @@ mod imp {
         #[template_child]
         pub(super) pods_panel: TemplateChild<view::PodsPanel>,
         #[template_child]
+        pub(super) volumes_view_stack_page: TemplateChild<adw::ViewStackPage>,
+        #[template_child]
+        pub(super) volumes_panel: TemplateChild<view::Volumes2Panel>,
+        #[template_child]
         pub(super) switcher_bar: TemplateChild<adw::ViewSwitcherBar>,
         #[template_child]
         pub(super) search_panel: TemplateChild<view::SearchPanel>,
@@ -137,6 +141,8 @@ mod imp {
             view::TextSearchEntry::static_type();
             view::WelcomePage::static_type();
             view::ZoomControl::static_type();
+            view::Volumes2Panel::static_type();
+            view::Volume2Row::static_type();
 
             klass.install_action("win.close", None, |widget, _, _| {
                 widget.close();
@@ -327,18 +333,24 @@ mod imp {
                         .chain_property::<model::Client>("pod-list")
                         .chain_property::<model::PodList>("len")
                         .upcast(),
+                    &client_expr
+                        .chain_property::<model::Client>("volume-list")
+                        .chain_property::<model::VolumeList>("len")
+                        .upcast(),
                 ],
                 closure!(|_: Self::Type,
                           title_visible: bool,
                           visible_panel: &str,
                           images: u32,
                           containers: u32,
-                          pods: u32| {
+                          pods: u32,
+                          volumes: u32| {
                     title_visible
                         && match visible_panel {
                             "images" => images > 0,
                             "containers" => containers > 0,
                             "pods" => pods > 0,
+                            "volumes" => volumes > 0,
                             _ => unreachable!(),
                         }
                 }),
@@ -713,25 +725,29 @@ impl Window {
         let imp = self.imp();
 
         if let Some(name) = imp.panel_stack.visible_child_name() {
+            imp.header_stack.set_visible_child_name("selection");
             match name.as_str() {
                 "images" => {
                     let list = imp.images_panel.image_list().unwrap();
                     if list.len() > 0 {
-                        imp.header_stack.set_visible_child_name("selection");
                         list.set_selection_mode(true);
                     }
                 }
                 "containers" => {
                     let list = imp.containers_panel.container_list().unwrap();
                     if list.len() > 0 {
-                        imp.header_stack.set_visible_child_name("selection");
                         list.set_selection_mode(true);
                     }
                 }
                 "pods" => {
                     let list = imp.pods_panel.pod_list().unwrap();
                     if list.len() > 0 {
-                        imp.header_stack.set_visible_child_name("selection");
+                        list.set_selection_mode(true);
+                    }
+                }
+                "volumes" => {
+                    let list = imp.volumes_panel.volume_list().unwrap();
+                    if list.len() > 0 {
                         list.set_selection_mode(true);
                     }
                 }
@@ -752,6 +768,9 @@ impl Window {
             list.set_selection_mode(false);
         }
         if let Some(list) = imp.pods_panel.pod_list() {
+            list.set_selection_mode(false);
+        }
+        if let Some(list) = imp.volumes_panel.volume_list() {
             list.set_selection_mode(false);
         }
     }
@@ -891,14 +910,12 @@ impl Window {
     fn client_err_op(&self, e: model::ClientError) {
         self.show_toast(
             adw::Toast::builder()
-                .title(gettext!(
-                    "Error on loading {}",
-                    match e {
-                        model::ClientError::Images => gettext("images"),
-                        model::ClientError::Containers => gettext("containers"),
-                        model::ClientError::Pods => gettext("pods"),
-                    }
-                ))
+                .title(match e {
+                    model::ClientError::Images => gettext("Error on loading images"),
+                    model::ClientError::Containers => gettext("Error on loading containers"),
+                    model::ClientError::Pods => gettext("Error on loading pods"),
+                    model::ClientError::Volumes => gettext("Error on loading volumes"),
+                })
                 .timeout(3)
                 .priority(adw::ToastPriority::High)
                 .build(),

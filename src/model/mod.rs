@@ -28,6 +28,8 @@ mod selectable_list;
 mod simple_container_list;
 mod value;
 mod volume;
+mod volume_list;
+mod volume_object;
 
 pub(crate) use self::abstract_container_list::AbstractContainerList;
 pub(crate) use self::abstract_container_list::AbstractContainerListExt;
@@ -73,6 +75,9 @@ pub(crate) use self::simple_container_list::SimpleContainerList;
 pub(crate) use self::value::Value;
 pub(crate) use self::volume::SELinux as VolumeSELinux;
 pub(crate) use self::volume::Volume;
+pub(crate) use self::volume_list::VolumeList;
+pub(crate) use self::volume_object::BoxedVolume;
+pub(crate) use self::volume_object::VolumeObject;
 
 #[derive(Clone, Debug)]
 pub(crate) struct RefreshError;

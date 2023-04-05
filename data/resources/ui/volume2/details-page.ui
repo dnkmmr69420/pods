@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="PdsVolumeDetailsPage" parent="GtkWidget">
+    <property name="layout-manager">
+      <object class="GtkBinLayout"/>
+    </property>
+
+    <child>
+      <object class="AdwLeaflet">
+        <property name="can-navigate-back">True</property>
+        <property name="can-unfold">False</property>
+
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+
+            <child>
+              <object class="AdwHeaderBar">
+
+                <child type="start">
+                  <object class="PdsBackNavigationControls" id="back_navigation_controls"/>
+                </child>
+
+                <child type="title">
+                  <object class="AdwWindowTitle" id="window_title">
+                    <property name="title" translatable="yes">Volume</property>
+                  </object>
+                </child>
+
+              </object>
+            </child>
+
+            <child>
+              <object class="AdwPreferencesPage">
+                <property name="vexpand">True</property>
+
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Properties</property>
+
+                    <child>
+                      <object class="PdsPropertyRow" id="name_row">
+                        <property name="key" translatable="yes">Name</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="PdsPropertyRow" id="created_row">
+                        <property name="key" translatable="yes">Created</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="PdsPropertyRow" id="size_row">
+                        <property name="key" translatable="yes">Disk space</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="PdsPropertyRow" id="command_row">
+                        <property name="key" translatable="yes">Command</property>
+                        <property name="visible">False</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="PdsPropertyRow" id="entrypoint_row">
+                        <property name="key" translatable="yes">Entry Point</property>
+                        <property name="visible">False</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="PdsPropertyRow" id="ports_row">
+                        <property name="key" translatable="yes">Ports</property>
+                        <property name="visible">False</property>
+                      </object>
+                    </child>
+
+                  </object>
+                </child>
+
+                <child>
+                  <object class="AdwPreferencesGroup">
+
+                    <child>
+                      <object class="GtkButton" id="delete_button">
+                        <style>
+                          <class name="destructive-button"/>
+                          <class name="pill"/>
+                        </style>
+                        <property name="action-name">image-details-page.delete-image</property>
+
+                        <child>
+                          <object class="GtkBox">
+                            <property name="halign">center</property>
+                            <property name="spacing">6</property>
+
+                            <child>
+                              <object class="GtkSpinner">
+                                <property name="spinning">True</property>
+                                <property name="visible" bind-source="delete_button" bind-property="sensitive" bind-flags="sync-create|invert-boolean"/>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label" translatable="yes">_Delete This Volume</property>
+                                <property name="use-underline">True</property>
+                              </object>
+                            </child>
+
+                          </object>
+                        </child>
+
+                      </object>
+                    </child>
+
+                  </object>
+                </child>
+
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Utilities</property>
+
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Inspection</property>
+                        <property name="subtitle" translatable="yes">View all volume properties in a structured text form.</property>
+                        <property name="activatable">True</property>
+                        <property name="action-name">image-details-page.inspect-image</property>
+                        <property name="icon-name">system-search-symbolic</property>
+
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon_name">go-next-symbolic</property>
+                          </object>
+                        </child>
+
+                      </object>
+                    </child>
+
+                  </object>
+                </child>
+
+              </object>
+            </child>
+
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwLeafletPage">
+            <property name="name">overlay</property>
+
+            <property name="child">
+              <object class="PdsLeafletOverlay" id="leaflet_overlay"/>
+            </property>
+
+          </object>
+        </child>
+
+      </object>
+    </child>
+
+  </template>
+</interface>

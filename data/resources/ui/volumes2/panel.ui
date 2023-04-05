@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+
+  <object class="GtkSizeGroup">
+    <property name="mode">horizontal</property>
+    <widgets>
+      <widget name="pull_button"/>
+      <widget name="build_button"/>
+    </widgets>
+  </object>
+
+  <object class="GtkListBoxRow" id="add_volume_row">
+    <property name="action-name">images-panel.show-add-image-menu</property>
+    <property name="selectable">False</property>
+
+    <child>
+      <object class="GtkImage">
+        <property name="icon-name">view-more-symbolic</property>
+        <property name="margin-top">15</property>
+        <property name="margin-bottom">15</property>
+      </object>
+    </child>
+
+  </object>
+
+  <menu id="menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Download…</attribute>
+        <attribute name="action">images-panel.pull-image</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Build…</attribute>
+        <attribute name="action">images-panel.build-image</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Prune…</attribute>
+        <attribute name="action">images-panel.prune-unused-images</attribute>
+      </item>
+    </section>
+  </menu>
+
+  <object class="GtkPopoverMenu" id="popover_menu">
+    <property name="menu-model">menu</property>
+  </object>
+
+  <template class="PdsVolumesPanel" parent="GtkWidget">
+    <property name="layout-manager">
+      <object class="GtkBinLayout"/>
+    </property>
+
+    <child>
+      <object class="GtkStack" id="main_stack">
+
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">spinner</property>
+            <property name="child">
+              <object class="GtkSpinner">
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="height-request">30</property>
+                <property name="width-request">30</property>
+                <property name="spinning">True</property>
+              </object>
+            </property>
+          </object>
+        </child>
+
+        <!-- List of volumes -->
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">volumes</property>
+
+            <property name="child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+
+                <child>
+                  <object class="AdwPreferencesPage">
+                    <property name="vexpand">True</property>
+
+                    <child>
+                      <object class="AdwPreferencesGroup" id="volumes_group">
+                        <property name="title" translatable="yes">Summary</property>
+
+                        <property name="header-suffix">
+                          <object class="GtkBox" id="header_suffix_box">
+                            <property name="spacing">9</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label" translatable="yes">Intermediates</property>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkSwitch" id="show_intermediates_switch">
+                                <property name="valign">center</property>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkMenuButton" id="menu_button">
+                                <style>
+                                  <class name="flat"/>
+                                </style>
+                                <property name="icon-name">view-more-symbolic</property>
+                                <property name="menu-model">menu</property>
+                              </object>
+                            </child>
+
+                          </object>
+                        </property>
+
+                        <child>
+                          <object class="GtkListBox" id="list_box">
+                            <style>
+                              <class name="boxed-list"/>
+                            </style>
+                            <property name="selection-mode">none</property>
+                          </object>
+                        </child>
+
+                      </object>
+                    </child>
+
+                  </object>
+                </child>
+
+                <child>
+                  <object class="GtkActionBar">
+                    <binding name="revealed">
+                      <lookup name="selection-mode" type="VolumeList">
+                        <lookup name="volume-list">PdsVolumesPanel</lookup>
+                      </lookup>
+                    </binding>
+
+                    <child type="center">
+                      <object class="AdwBin">
+                        <style>
+                          <class name="toolbar"/>
+                        </style>
+
+                        <child>
+                          <object class="GtkButton">
+                            <style>
+                              <class name="flat"/>
+                            </style>
+                            <property name="action-name">images-panel.delete-selection</property>
+
+                            <child>
+                              <object class="GtkBox">
+                                <property name="spacing">6</property>
+
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="icon-name">user-trash-symbolic</property>
+                                  </object>
+                                </child>
+
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label" translatable="yes">Delete</property>
+                                  </object>
+                                </child>
+
+                              </object>
+                            </child>
+
+                          </object>
+                        </child>
+
+                      </object>
+                    </child>
+
+                  </object>
+                </child>
+
+              </object>
+            </property>
+
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">empty</property>
+
+            <property name="child">
+              <object class="AdwStatusPage">
+                <property name="title" translatable="yes">No Images Found</property>
+                <property name="description" translatable="yes">You can use the buttons below to add an initial image.</property>
+
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">18</property>
+
+                    <child>
+                      <object class="GtkButton" id="pull_button">
+                        <style>
+                          <class name="pill"/>
+                          <class name="suggested-action"/>
+                        </style>
+                        <property name="action-name">images-panel.pull-image</property>
+                        <property name="halign">center</property>
+                        <property name="label" translatable="yes">_Download an Image</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="GtkButton" id="build_button">
+                        <style>
+                          <class name="pill"/>
+                        </style>
+                        <property name="action-name">images-panel.build-image</property>
+                        <property name="halign">center</property>
+                        <property name="label" translatable="yes">_Build a Local Image</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+
+                  </object>
+                </child>
+
+              </object>
+            </property>
+
+          </object>
+        </child>
+
+      </object>
+    </child>
+
+  </template>
+</interface>
