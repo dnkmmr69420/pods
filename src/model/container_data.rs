@@ -14,6 +14,7 @@ use crate::podman;
 
 monad_boxed_type!(pub(crate) BoxedSchema2HealthConfig(podman::models::Schema2HealthConfig) impls Debug is nullable);
 monad_boxed_type!(pub(crate) BoxedPortBindings(HashMap<String, Option<Vec<podman::models::InspectHostPort>>>) impls Debug is nullable);
+monad_boxed_type!(pub(crate) BoxedInspectMount(HashMap<String, podman::models::InspectMount>) impls Debug);
 
 mod imp {
     use super::*;
@@ -26,6 +27,8 @@ mod imp {
         pub(super) health_config: UnsyncOnceCell<Option<BoxedSchema2HealthConfig>>,
         #[property(get, set, construct_only)]
         pub(super) health_failing_streak: Cell<u32>,
+        #[property(get, set, construct_only)]
+        pub(super) mounts: UnsyncOnceCell<BoxedInspectMount>,
         #[property(get, set, construct_only)]
         pub(super) port_bindings: UnsyncOnceCell<Option<BoxedPortBindings>>,
         #[property(get, set, construct_only)]
@@ -70,6 +73,19 @@ impl From<podman::models::InspectContainerData> for ContainerData {
             .property(
                 "health-failing-streak",
                 health_failing_streak(data.state.as_ref()),
+            )
+            .property(
+                "mounts",
+                BoxedInspectMount::from(
+                    data.mounts
+                        .unwrap_or_default()
+                        .into_iter()
+                        .filter_map(|mount| match mount.name {
+                            Some(ref name) => Some((name.to_owned(), mount)),
+                            None => None,
+                        })
+                        .collect::<HashMap<_, _>>(),
+                ),
             )
             .property(
                 "port-bindings",

@@ -73,6 +73,7 @@
     <file compressed="true" preprocess="xml-stripblanks">ui/volume2/row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/volume2/details-page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/volumes2/panel.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/volumes2/group.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/welcome-page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
 

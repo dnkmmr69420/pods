@@ -230,6 +230,23 @@
                                               </object>
                                             </child>
 
+                                            <child>
+                                              <object class="GtkStackPage">
+                                                <property name="name">volumes</property>
+
+                                                <property name="child">
+                                                  <object class="GtkMenuButton" id="selected_volumes_button">
+                                                    <style>
+                                                      <class name="flat"/>
+                                                    </style>
+                                                    <property name="direction">none</property>
+                                                    <property name="menu-model">selection-menu</property>
+                                                  </object>
+                                                </property>
+
+                                              </object>
+                                            </child>
+
                                           </object>
                                         </child>
 

@@ -96,5 +96,6 @@ pub(crate) use self::value::Row as ValueRow;
 pub(crate) use self::volume::Row as VolumeRow;
 pub(crate) use self::volume2::DetailsPage as VolumeDetailsPage;
 pub(crate) use self::volume2::Row as Volume2Row;
+pub(crate) use self::volumes2::Group as Volumes2Group;
 pub(crate) use self::volumes2::Panel as Volumes2Panel;
 pub(crate) use self::welcome_page::WelcomePage;

@@ -56,6 +56,8 @@ mod imp {
         #[template_child]
         pub(super) selected_pods_button: TemplateChild<gtk::MenuButton>,
         #[template_child]
+        pub(super) selected_volumes_button: TemplateChild<gtk::MenuButton>,
+        #[template_child]
         pub(super) search_stack: TemplateChild<gtk::Stack>,
         #[template_child]
         pub(super) panel_stack: TemplateChild<adw::ViewStack>,
@@ -142,6 +144,7 @@ mod imp {
             view::WelcomePage::static_type();
             view::ZoomControl::static_type();
             view::Volumes2Panel::static_type();
+            view::Volumes2Group::static_type();
             view::Volume2Row::static_type();
 
             klass.install_action("win.close", None, |widget, _, _| {
@@ -312,6 +315,7 @@ mod imp {
                         Some("images") => imp.images_view_stack_page.set_needs_attention(false),
                         Some("containers") => imp.containers_view_stack_page.set_needs_attention(false),
                         Some("pods") => imp.pods_view_stack_page.set_needs_attention(false),
+                        Some("volumes") => imp.pods_view_stack_page.set_needs_attention(false),
                         _ => {}
                     }
                 }),
@@ -410,6 +414,19 @@ mod imp {
                                         && list.initialized()
                                     {
                                         imp.pods_view_stack_page.set_needs_attention(true);
+                                    }
+                                }));
+
+                                imp.volumes_view_stack_page.set_needs_attention(false);
+                                client.volume_list().connect_notify_local(
+                                    Some("len"),
+                                    clone!(@weak obj => move |list, _|
+                                {
+                                    let imp = obj.imp();
+                                    if imp.panel_stack.visible_child_name().as_deref() != Some("volumes")
+                                        && list.initialized()
+                                    {
+                                        imp.volumes_view_stack_page.set_needs_attention(true);
                                     }
                                 }));
 
@@ -680,6 +697,20 @@ impl Window {
             )))
             .bind(&*imp.selected_pods_button, "label", Some(&*imp.pods_panel));
 
+        view::Volumes2Panel::this_expression("volume-list")
+            .chain_property::<model::VolumeList>("num-selected")
+            .chain_closure::<String>(closure!(|_: view::Volumes2Panel, selected: u32| ngettext!(
+                "{} Selected Volume",
+                "{} Selected Volumes",
+                selected,
+                selected
+            )))
+            .bind(
+                &*imp.selected_volumes_button,
+                "label",
+                Some(&*imp.volumes_panel),
+            );
+
         imp.images_panel
             .connect_exit_selection_mode(clone!(@weak self as obj => move |_| {
                 obj.imp().header_stack.set_visible_child_name("main");
@@ -689,6 +720,10 @@ impl Window {
                 obj.imp().header_stack.set_visible_child_name("main");
             }));
         imp.pods_panel
+            .connect_exit_selection_mode(clone!(@weak self as obj => move |_| {
+                obj.imp().header_stack.set_visible_child_name("main");
+            }));
+        imp.volumes_panel
             .connect_exit_selection_mode(clone!(@weak self as obj => move |_| {
                 obj.imp().header_stack.set_visible_child_name("main");
             }));
@@ -796,6 +831,12 @@ impl Window {
             .filter(|list| list.is_selection_mode())
         {
             list.select_all()
+        } else if let Some(list) = imp
+            .volumes_panel
+            .volume_list()
+            .filter(|list| list.is_selection_mode())
+        {
+            list.select_all()
         }
     }
 
@@ -817,6 +858,12 @@ impl Window {
         } else if let Some(list) = imp
             .pods_panel
             .pod_list()
+            .filter(|list| list.is_selection_mode())
+        {
+            list.select_none()
+        } else if let Some(list) = imp
+            .volumes_panel
+            .volume_list()
             .filter(|list| list.is_selection_mode())
         {
             list.select_none()

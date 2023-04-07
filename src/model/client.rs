@@ -83,7 +83,7 @@ mod imp {
                         .filter(|container| container.image_id() == image.id())
                         .for_each(|container| {
                             container.set_image(Some(image));
-                            image.add_container(&container);
+                            image.container_list().add_container(&container);
                         });
                 }));
 
@@ -92,7 +92,7 @@ mod imp {
                     let image = obj.image_list().get_image(container.image_id().as_str());
                     if let Some(ref image) = image {
                         container.set_image(Some(image));
-                        image.add_container(container);
+                        image.container_list().add_container(container);
                     }
 
                     if let Some(pod) = container.pod_id().and_then(|id| obj.pod_list().get_pod(&id))
@@ -100,11 +100,27 @@ mod imp {
                         container.set_pod(Some(&pod));
                         pod.container_list().add_container(container);
                     }
+
+                    if !container.mounts().is_empty() {
+                        container.inspect(clone!(@weak obj => move |result| match result {
+                            Ok(container) => {
+                                container.data().unwrap().mounts().keys().for_each(|mount| {
+                                    if let Some(volume) = obj.volume_list().get_volume(mount) {
+                                        volume.container_list().add_container(&container);
+                                        container.volume_list().add_volume(&volume);
+                                    }
+                                });
+                            }
+                            Err(e) => {
+
+                            }
+                        }));
+                    }
                 }));
             obj.container_list().connect_container_removed(
                 clone!(@weak obj => move |_, container| {
                     if let Some(image) = obj.image_list().get_image(container.image_id().as_str()) {
-                        image.remove_container(container.id().as_str());
+                        image.container_list().remove_container(container.id().as_str());
                     }
 
                     if let Some(pod) = container.pod() {
@@ -122,6 +138,29 @@ mod imp {
                         .for_each(|container| {
                             container.set_pod(Some(pod));
                             pod.container_list().add_container(&container);
+                        });
+                }));
+
+            obj.volume_list()
+                .connect_volume_added(clone!(@weak obj => move |_, volume| {
+                    obj.container_list()
+                        .iter::<model::Container>()
+                        .map(|container| container.unwrap())
+                        .filter(|container| !container.mounts().is_empty())
+                        .for_each(|container| {
+                            container.inspect(clone!(@weak volume => move |result| match result {
+                                Ok(container) => {
+                                    container.data().unwrap().mounts().keys().for_each(|mount| {
+                                        if mount == &volume.volume().name {
+                                            volume.container_list().add_container(&container);
+                                            container.volume_list().add_volume(&volume);
+                                        }
+                                    });
+                                }
+                                Err(e) => {
+
+                                }
+                            }));
                         });
                 }));
         }

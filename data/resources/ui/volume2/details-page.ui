@@ -143,6 +143,18 @@
                   </object>
                 </child>
 
+                <child>
+                  <object class="PdsContainersGroup">
+                    <binding name="container-list">
+                      <lookup name="container-list" type="VolumeObject">
+                        <lookup name="volume">PdsVolumeDetailsPage</lookup>
+                      </lookup>
+                    </binding>
+                    <property name="title" translatable="yes">Associated Containers</property>
+                    <property name="no-containers-label" translatable="yes">There are no containers associated with this volume.</property>
+                  </object>
+                </child>
+
               </object>
             </child>
 

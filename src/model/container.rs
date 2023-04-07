@@ -1,5 +1,6 @@
 use std::cell::Cell;
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
@@ -132,6 +133,7 @@ mod imp {
     #[derive(Debug, Default, Properties)]
     #[properties(wrapper_type = super::Container)]
     pub(crate) struct Container {
+        pub(super) mounts: UnsyncOnceCell<HashSet<String>>,
         pub(super) can_inspect: Cell<bool>,
         #[property(get, set, construct_only, nullable)]
         pub(super) container_list: glib::WeakRef<model::ContainerList>,
@@ -165,6 +167,8 @@ mod imp {
         pub(super) status: Cell<Status>,
         #[property(get, set, construct)]
         pub(super) up_since: Cell<i64>,
+        #[property(get = Self::volume_list)]
+        pub(super) volume_list: UnsyncOnceCell<model::SimpleVolumeList>,
         #[property(get)]
         pub(super) to_be_deleted: Cell<bool>,
         #[property(get, set)]
@@ -252,6 +256,10 @@ mod imp {
             obj.notify("status");
         }
 
+        pub(super) fn volume_list(&self) -> model::SimpleVolumeList {
+            self.volume_list.get_or_init(Default::default).to_owned()
+        }
+
         pub(super) fn set_to_be_deleted(&self, value: bool) {
             let obj = &*self.obj();
             if obj.to_be_deleted() == value {
@@ -272,7 +280,7 @@ impl Container {
         container_list: &model::ContainerList,
         list_container: podman::models::ListContainer,
     ) -> Self {
-        glib::Object::builder()
+        let obj: Self = glib::Object::builder()
             .property("container-list", container_list)
             .property(
                 "created",
@@ -304,7 +312,19 @@ impl Container {
             )
             .property("status", status(list_container.state.as_deref()))
             .property("up-since", list_container.started_at.unwrap())
-            .build()
+            .build();
+
+        obj.imp()
+            .mounts
+            .set(HashSet::from_iter(
+                list_container.mounts.unwrap_or_default(),
+            ))
+            .unwrap();
+        obj
+    }
+
+    pub(crate) fn mounts(&self) -> &HashSet<String> {
+        self.imp().mounts.get().unwrap()
     }
 
     pub(crate) fn update(&self, list_container: podman::models::ListContainer) {
@@ -318,12 +338,12 @@ impl Container {
 
     pub(crate) fn inspect<F>(&self, op: F)
     where
-        F: FnOnce(podman::Error) + 'static,
+        F: FnOnce(Result<model::Container, podman::Error>) + 'static,
     {
         let imp = self.imp();
-        if !imp.can_inspect.get() {
-            return;
-        }
+        // if !imp.can_inspect.get() {
+        //     return;
+        // }
 
         imp.can_inspect.set(false);
 
@@ -333,14 +353,17 @@ impl Container {
                 async move { container.inspect().await }
             },
             clone!(@weak self as obj => move |result| {
+                obj.imp().can_inspect.set(true);
                 match result {
-                    Ok(data) => obj.imp().set_data(data),
+                    Ok(data) => {
+                        obj.imp().set_data(data);
+                        op(Ok(obj));
+                    },
                     Err(e) => {
                         log::error!("Error on inspecting container '{}': {e}", obj.id());
-                        op(e);
+                        op(Err(e));
                     },
                 }
-                obj.imp().can_inspect.set(true);
             }),
         );
     }

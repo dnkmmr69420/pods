@@ -29,6 +29,8 @@ mod imp {
         #[template_child]
         pub(super) check_button: TemplateChild<gtk::CheckButton>,
         #[template_child]
+        pub(super) status_image: TemplateChild<gtk::Image>,
+        #[template_child]
         pub(super) name_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub(super) end_box_revealer: TemplateChild<gtk::Revealer>,
@@ -108,7 +110,7 @@ mod imp {
             )
             .bind(&*self.name_label, "label", Some(obj));
 
-            // let css_classes = utils::css_classes(self.name_label.upcast_ref());
+            // let css_classes = utils::css_classes(self.status_image.upcast_ref());
             // image_expr
             //     .chain_property::<model::Image>("repo-tags")
             //     .chain_property::<model::RepoTagList>("len")

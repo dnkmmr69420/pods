@@ -289,6 +289,18 @@
                 </child>
 
                 <child>
+                  <object class="PdsVolumesGroup">
+                    <binding name="volume-list">
+                      <lookup name="volume-list" type="Container">
+                        <lookup name="container">PdsContainerDetailsPage</lookup>
+                      </lookup>
+                    </binding>
+                    <property name="title" translatable="yes">Associated Volumes</property>
+                    <property name="no-volumes-label" translatable="yes">There are no volumes associated with this container.</property>
+                  </object>
+                </child>
+
+                <child>
                   <object class="PdsContainerResourcesQuickReferenceGroup" id="resources_quick_reference_group">
                     <binding name="container">
                       <lookup name="container">PdsContainerDetailsPage</lookup>

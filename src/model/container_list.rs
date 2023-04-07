@@ -326,7 +326,7 @@ impl ContainerList {
                                         drop(list);
 
                                         obj.items_changed(index, 0, 1);
-                                        obj.container_added(&container);
+                                        obj.volume_added(&container);
                                     }
                                     Entry::Occupied(e) => {
                                         let container = e.get().clone();

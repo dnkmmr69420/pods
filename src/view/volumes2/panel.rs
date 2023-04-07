@@ -44,15 +44,7 @@ mod imp {
         #[template_child]
         pub(super) main_stack: TemplateChild<gtk::Stack>,
         #[template_child]
-        pub(super) volumes_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub(super) header_suffix_box: TemplateChild<gtk::Box>,
-        #[template_child]
-        pub(super) show_intermediates_switch: TemplateChild<gtk::Switch>,
-        #[template_child]
-        pub(super) menu_button: TemplateChild<gtk::MenuButton>,
-        #[template_child]
-        pub(super) list_box: TemplateChild<gtk::ListBox>,
+        pub(super) volumes_group: TemplateChild<view::Volumes2Group>,
     }
 
     #[glib::object_subclass]
@@ -120,20 +112,6 @@ mod imp {
 
             let obj = &*self.obj();
 
-            // self.popover_menu.set_parent(&*self.add_volume_row);
-
-            self.settings.connect_changed(
-                Some("show-intermediate-images"),
-                clone!(@weak obj => move |_, _| obj.update_properties_filter()),
-            );
-            self.settings
-                .bind(
-                    "show-intermediate-images",
-                    &*self.show_intermediates_switch,
-                    "active",
-                )
-                .build();
-
             let volume_list_expr = Self::Type::this_expression("volume-list");
             let volume_list_len_expr = volume_list_expr.chain_property::<model::VolumeList>("len");
             let is_selection_mode_expr = volume_list_expr
@@ -141,13 +119,6 @@ mod imp {
                 .chain_closure::<bool>(closure!(|_: Self::Type, selection_mode: bool| {
                     !selection_mode
                 }));
-
-            volume_list_len_expr
-                .chain_closure::<bool>(closure!(|_: Self::Type, len: u32| len > 0))
-                .bind(&*self.header_suffix_box, "visible", Some(obj));
-
-            is_selection_mode_expr.bind(&*self.menu_button, "visible", Some(obj));
-            // is_selection_mode_expr.bind(&*self.add_volume_row, "visible", Some(obj));
 
             volume_list_len_expr.watch(
                 Some(obj),
@@ -257,27 +228,6 @@ mod imp {
             if obj.volume_list().as_ref() == Some(value) {
                 return;
             }
-
-            // value.connect_notify_local(
-            //     Some("intermediates"),
-            //     clone!(@weak obj => move |_ ,_| {
-            //         obj.update_properties_filter();
-            //         obj.update_sorter();
-            //     }),
-            // );
-
-            let model = gtk::SortListModel::new(
-                Some(gtk::FilterListModel::new(
-                    Some(value.to_owned()),
-                    self.properties_filter.get().cloned(),
-                )),
-                self.sorter.get().cloned(),
-            );
-
-            self.list_box.bind_model(Some(&model), |item| {
-                view::Volume2Row::from(item.downcast_ref().unwrap()).upcast()
-            });
-            // self.list_box.append(&*self.add_volume_row);
 
             obj.action_set_enabled(ACTION_DELETE_SELECTION, false);
             value.connect_notify_local(

@@ -6,11 +6,10 @@ use glib::Properties;
 use gtk::gio;
 use gtk::glib;
 use gtk::glib::clone;
-use gtk::glib::subclass::Signal;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use indexmap::map::Entry;
 use indexmap::IndexMap;
-use once_cell::sync::Lazy;
 use once_cell::sync::OnceCell as SyncOnceCell;
 use once_cell::unsync::OnceCell as UnsyncOnceCell;
 
@@ -40,19 +39,14 @@ mod imp {
     impl ObjectSubclass for VolumeList {
         const NAME: &'static str = "VolumeList";
         type Type = super::VolumeList;
-        type Interfaces = (gio::ListModel, model::SelectableList);
+        type Interfaces = (
+            gio::ListModel,
+            model::AbstractVolumeList,
+            model::SelectableList,
+        );
     }
 
     impl ObjectImpl for VolumeList {
-        fn signals() -> &'static [Signal] {
-            static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
-                vec![Signal::builder("volume-added")
-                    .param_types([model::VolumeObject::static_type()])
-                    .build()]
-            });
-            SIGNALS.as_ref()
-        }
-
         fn properties() -> &'static [glib::ParamSpec] {
             static PROPERTIES: SyncOnceCell<Vec<glib::ParamSpec>> = SyncOnceCell::new();
             PROPERTIES.get_or_init(|| {
@@ -61,9 +55,7 @@ mod imp {
                     .cloned()
                     .chain(vec![
                         glib::ParamSpecUInt::builder("len").read_only().build(),
-                        glib::ParamSpecUInt::builder("intermediates")
-                            .read_only()
-                            .build(),
+                        glib::ParamSpecUInt::builder("used").read_only().build(),
                         glib::ParamSpecUInt::builder("num-selected")
                             .read_only()
                             .build(),
@@ -79,6 +71,7 @@ mod imp {
         fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             match pspec.name() {
                 "len" => self.obj().len().to_value(),
+                "used" => self.obj().used().to_value(),
                 "num-selected" => self.obj().num_selected().to_value(),
                 _ => self.derived_property(id, pspec),
             }
@@ -86,8 +79,9 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = &*self.obj();
+
+            model::AbstractVolumeList::bootstrap(obj.upcast_ref());
             model::SelectableList::bootstrap(obj.upcast_ref());
-            obj.connect_items_changed(|self_, _, _, _| self_.notify("len"));
         }
     }
 
@@ -135,7 +129,7 @@ mod imp {
 
 glib::wrapper! {
     pub(crate) struct VolumeList(ObjectSubclass<imp::VolumeList>)
-        @implements gio::ListModel, model::SelectableList;
+        @implements gio::ListModel, model::AbstractVolumeList, model::SelectableList;
 }
 
 impl From<&model::Client> for VolumeList {
@@ -147,6 +141,15 @@ impl From<&model::Client> for VolumeList {
 impl VolumeList {
     pub(crate) fn len(&self) -> u32 {
         self.n_items()
+    }
+
+    pub(crate) fn used(&self) -> u32 {
+        self.imp()
+            .list
+            .borrow()
+            .values()
+            .filter(|volume| volume.container_list().n_items() > 0)
+            .count() as u32
     }
 
     pub(crate) fn total_size(&self) -> u64 {
@@ -219,13 +222,16 @@ impl VolumeList {
                         volumes.into_iter().for_each(|volume| {
                             let index = obj.len();
 
-                            let volume = model::VolumeObject::new(&obj, volume);
-                            imp.list
-                                .borrow_mut()
-                                .insert(volume.volume().name.clone(), volume.clone());
+                            let mut list = imp.list.borrow_mut();
+                            if let Entry::Vacant(e) = list.entry(volume.name.clone()) {
+                                let volume = model::VolumeObject::new(&obj, volume);
+                                e.insert(volume.clone());
 
-                            obj.items_changed(index, 0, 1);
-                            obj.volume_added(&volume);
+                                drop(list);
+
+                                obj.items_changed(index, 0, 1);
+                                obj.volume_added(&volume);
+                            }
                         });
                     }
                     Err(e) => {

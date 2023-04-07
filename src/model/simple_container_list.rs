@@ -113,7 +113,7 @@ impl SimpleContainerList {
         });
 
         self.items_changed(index as u32, 0, 1);
-        self.container_added(container);
+        self.volume_added(container);
     }
 
     pub(crate) fn remove_container<Q: Borrow<str> + ?Sized>(&self, id: &Q) {

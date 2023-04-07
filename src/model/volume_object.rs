@@ -24,6 +24,8 @@ mod imp {
         pub(super) volume_list: glib::WeakRef<model::VolumeList>,
         #[property(get, set, construct_only)]
         pub(super) volume: UnsyncOnceCell<BoxedVolume>,
+        #[property(get = Self::container_list)]
+        pub(super) container_list: UnsyncOnceCell<model::SimpleContainerList>,
         #[property(get)]
         pub(super) to_be_deleted: Cell<bool>,
         #[property(get, set)]
@@ -54,6 +56,12 @@ mod imp {
 
         fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             self.derived_property(id, pspec)
+        }
+    }
+
+    impl VolumeObject {
+        pub(super) fn container_list(&self) -> model::SimpleContainerList {
+            self.container_list.get_or_init(Default::default).to_owned()
         }
     }
 }

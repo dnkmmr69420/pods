@@ -231,14 +231,6 @@ impl Image {
 }
 
 impl Image {
-    pub(crate) fn add_container(&self, container: &model::Container) {
-        self.container_list().add_container(container);
-    }
-
-    pub(crate) fn remove_container<Q: Borrow<str> + ?Sized>(&self, id: &Q) {
-        self.container_list().remove_container(id);
-    }
-
     pub(crate) fn delete<F>(&self, op: F)
     where
         F: FnOnce(&Self, podman::Result<()>) + 'static,

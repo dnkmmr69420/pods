@@ -97,7 +97,7 @@ impl AbstractContainerList {
 }
 
 pub(crate) trait AbstractContainerListExt: IsA<AbstractContainerList> {
-    fn container_added(&self, container: &model::Container) {
+    fn volume_added(&self, container: &model::Container) {
         self.emit_by_name::<()>("container-added", &[container]);
     }
 

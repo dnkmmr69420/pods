@@ -31,6 +31,16 @@
             <property name="spacing">6</property>
 
             <child>
+              <object class="GtkImage" id="status_image">
+                <style>
+                  <class name="circle"/>
+                </style>
+                <property name="icon-name">drive-harddisk-system-symbolic</property>
+                <property name="margin-end">4</property>
+              </object>
+            </child>
+
+            <child>
               <object class="GtkBox">
                 <property name="hexpand">True</property>
                 <property name="valign">center</property>

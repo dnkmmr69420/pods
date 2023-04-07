@@ -83,49 +83,13 @@
                     <property name="vexpand">True</property>
 
                     <child>
-                      <object class="AdwPreferencesGroup" id="volumes_group">
+                      <object class="PdsVolumesGroup" id="volumes_group">
+                        <binding name="volume-list">
+                          <lookup name="volume-list">PdsVolumesPanel</lookup>
+                        </binding>
                         <property name="title" translatable="yes">Summary</property>
-
-                        <property name="header-suffix">
-                          <object class="GtkBox" id="header_suffix_box">
-                            <property name="spacing">9</property>
-                            <property name="halign">center</property>
-                            <property name="valign">center</property>
-
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="label" translatable="yes">Intermediates</property>
-                              </object>
-                            </child>
-
-                            <child>
-                              <object class="GtkSwitch" id="show_intermediates_switch">
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-
-                            <child>
-                              <object class="GtkMenuButton" id="menu_button">
-                                <style>
-                                  <class name="flat"/>
-                                </style>
-                                <property name="icon-name">view-more-symbolic</property>
-                                <property name="menu-model">menu</property>
-                              </object>
-                            </child>
-
-                          </object>
-                        </property>
-
-                        <child>
-                          <object class="GtkListBox" id="list_box">
-                            <style>
-                              <class name="boxed-list"/>
-                            </style>
-                            <property name="selection-mode">none</property>
-                          </object>
-                        </child>
-
+                        <property name="show-used-settings-key">show-only-used-volumes</property>
+                        <property name="no-volumes-label" translatable="yes">No volumes found</property>
                       </object>
                     </child>
 
